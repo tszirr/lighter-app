@@ -140,6 +140,9 @@ int run()
 	input::Mouse mouse(wnd);
 	input::UiKeyboard keyboard(wnd, ui::InputKeys());
 
+	int scrollPos = 0;
+	wnd.scroll = [&](int x, int y) { scrollPos += y; };
+
 	keyboard.keyEvent[GLFW_KEY_ESCAPE].pressOnce = [&]() { glfwSetWindowShouldClose(wnd, true); };
 	
 	keyboard.keyEvent[GLFW_KEY_ENTER].pressOnce = [&]() { mouse.setMouseCapture(wnd, !mouse.mouseCaptured); };
@@ -436,28 +439,16 @@ int run()
 				glBlendColor(fontBrightness, fontBrightness, fontBrightness, 1.0f);
 				glBlendEquation(GL_FUNC_ADD);
 				glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_COLOR);
-
-/*				textRenderer.drawText(freeTypeLib, font, glm::ivec2(16, 16),
-					"Glyph images are always loaded, transformed, and described in the cartesian coordinate \n"
-					"system in FreeType (which means that increasing Y corresponds to upper scanlines), unlike \n"
-					"the system typically used for bitmaps (where the topmost scanline has coordinate 0). We \n"
-					"must thus convert between the two systems when we define the pen position, and when we \n"
-					"compute the topleft position of the bitmap."
-					);
-				textRenderer.flushText();
-*/			}
+			}
 			
 			// ui test
 			{
-				textUi.state.cursorVisible = halfSecond;
-				textUi.setup.rect.min = glm::ivec2(screenDim.x - 220, 300);
-				textUi.setup.rect.max = textUi.setup.rect.min + glm::ivec2(200, 500);
+				if (scrollPos > 0) scrollPos = 0;
+				textUi.setup.rect.min = glm::ivec2(screenDim.x - 220, 50 + scrollPos * 2 * textUi.setup.options.lineHeight);
+				textUi.setup.rect.max = textUi.setup.rect.min + glm::ivec2(200, 4500);
 
-				textUi.state.mouse.pos = mouse.lastMousePos;
-				textUi.state.mouse.primary = mouse.buttonState[GLFW_MOUSE_BUTTON_LEFT];
-				textUi.state.mouse.primaryChanged = mouse.buttonChanged[GLFW_MOUSE_BUTTON_LEFT];
-				textUi.state.mouse.secondary = mouse.buttonState[GLFW_MOUSE_BUTTON_RIGHT];
-				textUi.state.mouse.secondaryChanged = mouse.buttonChanged[GLFW_MOUSE_BUTTON_RIGHT];
+				textUi.state.cursorVisible = halfSecond;
+				textUi.state.mouse = mouse.defaultUiMapping<ui::Mouse>();
 
 				auto& ui = textUi.reset(textUi.state.mouse, keyboard.inputQueue);
 				keyboard.inputQueue.clear();

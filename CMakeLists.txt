@@ -24,8 +24,6 @@ set(APPLICATION_SHADER_SRC
   )
 set(APPLICATION_CODE
   main.cpp
-  obj.cpp
-  obj.h
   pch.cpp
   pch.h
   )
